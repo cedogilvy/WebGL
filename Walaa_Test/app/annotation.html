@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script type="module">
+			// Our Javascript will go here.
+      import {
+        Color,
+        LinearEncoding,
+        MeshBasicMaterial,
+        Mesh,
+        PerspectiveCamera,
+        sRGBEncoding,
+        Sprite,
+        HemisphereLight,
+        SpriteMaterial,
+        TextureLoader,
+        BoxBufferGeometry,
+        Scene,
+        Vector3,
+        WebGLRenderer,
+      } from "https://unpkg.com/three@0.127.0/build/three.module.js";
+      import { OrbitControls } from "https://unpkg.com/three@0.127.0/examples/jsm/controls/OrbitControls.js";
+
+      import { GLTFLoader } from 'https://unpkg.com/three@0.127.0/examples/jsm/loaders/GLTFLoader.js';
+
+      init();
+
+      function init() {
+          const renderer = new WebGLRenderer();
+          renderer.outputEncoding = sRGBEncoding;
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          renderer.setPixelRatio( window.devicePixelRatio );
+        
+          document.body.appendChild( renderer.domElement );
+        
+          const scene = new Scene();
+          scene.background = new Color(0xeeeeee)
+        
+          const light = new HemisphereLight(0xffffee, 0x444444)
+          scene.add(light)
+
+          const camera = new PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 10 );
+          camera.position.set(0, 0, 3);
+
+          const controls = new OrbitControls(camera, renderer.domElement);
+
+
+          renderer.setAnimationLoop(() => {
+            renderer.render( scene, camera );
+          });
+        
+        loadModel(scene)
+      }
+
+      function loadModel(scene) {
+        const loader = new GLTFLoader();
+        loader.crossOrigin = "anonymous";
+        loader.load('https://rawcdn.githack.com/mrdoob/three.js/76d16bd828c8d3e1870eac45aa466c20313cf944/examples/models/gltf/Nefertiti/Nefertiti.glb',(gltf) => {
+          
+          const model = gltf.scene.children[0]
+          model.scale.multiplyScalar(0.1)
+          model.position.y = - 1.5
+          
+          scene.add(model)
+          
+          createMarker(model, new Vector3(0,17,8))
+          createMarker(model, new Vector3(4,15,1.7))
+          createMarker(model, new Vector3(-6,0,4))
+
+        })
+        
+        
+      }
+
+
+      function createMarker(model, position) {
+        const loader = new TextureLoader();
+        loader.crossOrigin = "";
+        const map = loader.load("https://i.imgur.com/EZynrrA.png");
+        map.encoding = sRGBEncoding
+        
+        const spriteMaterialFront = new SpriteMaterial( { map } );
+        
+        const spriteFront = new Sprite( spriteMaterialFront );
+        spriteFront.position.copy(position) 
+        
+        const spriteMaterialRear = new SpriteMaterial({ 
+          map,
+          opacity: 0.3, 
+          transparent: true, 
+          depthTest: false
+        });
+        
+        const spriteRear = new Sprite( spriteMaterialRear );
+        spriteRear.position.copy(position) 
+        
+        model.add(spriteFront, spriteRear)
+      }
+
+
+
+
+		</script>
+	</body>
+</html>
